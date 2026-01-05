@@ -1,6 +1,8 @@
 require('dotenv').config();
 
 const express = require('express');
+const helmet = require('helmet');
+
 const UserRoutes = require('./routes/user.routes');
 const TicketRoutes = require('./routes/ticket.routes');
 const TagsRoutes = require('./routes/tags.routes')
@@ -10,6 +12,29 @@ const errorHandler = require('./errors/errorHandler');
 const passport = require('passport');
 
 const app = express();
+
+app.use(helmet());
+
+const cors = require('cors');
+// Liste des domaines autorisés
+const whitelist = ['http://localhost:5500', 'http://localhost:4200'];
+const corsOptions = {
+origin: function (origin, callback) {
+// Cas 1 : L'origine est dans la whitelist -> OK
+// Cas 2 : !origin signifie requête serveur-à-serveur (Postman, curl) -> OK
+// Pour être ultra-strict et bloquer Postman, retirez "|| !origin"
+if (whitelist.indexOf(origin) !== -1 || !origin) {
+callback(null, true);
+} else {
+callback(new Error('Bloqué par CORS : Domaine non autorisé'));
+}
+},
+methods: ['GET', 'POST', 'PUT', 'DELETE'], // Verbes autorisés
+allowedHeaders: ['Content-Type', 'Authorization'] // Headers autorisés
+};
+// Application du middleware
+app.use(cors(corsOptions));
+
 app.use(passport.initialize());
 require('./config/passport')(passport);
 
