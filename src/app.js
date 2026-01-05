@@ -23,7 +23,7 @@ origin: function (origin, callback) {
 // Cas 1 : L'origine est dans la whitelist -> OK
 // Cas 2 : !origin signifie requête serveur-à-serveur (Postman, curl) -> OK
 // Pour être ultra-strict et bloquer Postman, retirez "|| !origin"
-if (whitelist.indexOf(origin) !== -1 || !origin) {
+if (whitelist.indexOf(origin) !== -1 || !origin) { //!origin à retirer après dev
 callback(null, true);
 } else {
 callback(new Error('Bloqué par CORS : Domaine non autorisé'));
