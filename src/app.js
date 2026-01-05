@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const morgan = require('morgan');
 const hpp = require('hpp');
 const helmet = require('helmet');
 const { globalLimiter } = require('./middlewares/rateLimiter');
@@ -14,7 +15,24 @@ const errorHandler = require('./errors/errorHandler');
 const passport = require('passport');
 const sanitizer = require('./middlewares/sanitizer');
 
+const fs = require('fs');
+const path = require('path');
+
 const app = express();
+
+// --- LOGGING (L'Espion) ---
+// Placez-le TOUT EN HAUT, avant Helmet, Cors, et les Routes.
+// Le format 'dev' est coloré et concis pour le développement.
+// Le format 'combined' est standard pour la prod (Apache style).
+app.use(morgan('dev'));
+
+// Création d'un fichier access.log en mode 'append' (ajout)
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a'
+});
+// Configuration de morgan pour écrire dans le fichier
+app.use(morgan('combined', { stream: accessLogStream }));
+
+// ... Helmet, Cors, RateLimit, Routes
 
 app.use((req, res, next) => {
   next();

@@ -14,10 +14,9 @@ async (email, password, done) => {
         const user = await userRepository.findOne({ where: { email: email } });
         
     // Si l'user n'existe pas OU si le mot de passe (bcrypt.compare) est faux :
+        if (!user) { return done(null, false, { message: 'Email ou mot de passe incorrect' }); }
         const match = await bcrypt.compare(password, user.password);
-        if (!user || !match) {
-            return done(null, false, { message: 'Email ou mot de passe incorrect' });
-        }
+        if (!match) { return done(null, false, { message: 'Email ou mot de passe incorrect' }); }
 
     // Succès
       return done(null, user);    
