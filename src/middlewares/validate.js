@@ -1,5 +1,4 @@
 const validate = (schema) => {
-    // Retourne un middleware Express standard (req, res, next)
     return (req, res, next) => {
         try {
             // 1. Parsing et Validation

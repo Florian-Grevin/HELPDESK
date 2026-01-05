@@ -1,7 +1,9 @@
 require('dotenv').config();
 
 const express = require('express');
+const hpp = require('hpp');
 const helmet = require('helmet');
+const { globalLimiter } = require('./middlewares/rateLimiter');
 
 const UserRoutes = require('./routes/user.routes');
 const TicketRoutes = require('./routes/ticket.routes');
@@ -12,6 +14,12 @@ const errorHandler = require('./errors/errorHandler');
 const passport = require('passport');
 
 const app = express();
+
+app.use((req, res, next) => {
+  console.log("MIDDLEWARE TOUT EN HAUT");
+  next();
+});
+
 
 app.use(helmet());
 
@@ -38,13 +46,24 @@ app.use(cors(corsOptions));
 app.use(passport.initialize());
 require('./config/passport')(passport);
 
+// 1. Limiteur Global
+app.use(globalLimiter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 3. Protection contre la pollution de paramètres (HPP)
+app.use(hpp()); //Incompatible avec express 5
+
+
 app.use(logger);
 
-
-
 //Routes
+app.get('/test-hpp', (req, res) => {
+  res.json(req.query);
+});
+
+
 app.get('/', (req, res) => {
   res.send(`
     HELLO
