@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Board</title>
+</head>
+<body>
+    <form id="Form">
+        <label for="content">Message</label>
+        <input type="text" id="content" name="content"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    <p id="display"></p>
+
+    <script>
+        const form = document.getElementById("Form");
+
+        // Affichage depuis la query string
+        const params = new URLSearchParams(window.location.search);
+        const message = params.get("content");
+        if (message) {
+            document.getElementById("display").textContent = message;
+        }
+
+        form.addEventListener("submit", async (e) => {
+            //e.preventDefault(); // éviter le reload
+
+            const content = document.getElementById("content").value;
+
+            // Envoi au backend Express
+            await fetch("http://localhost:3000/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/text" },
+                body: content
+            });
+
+            // Mise à jour de l’URL sans recharger la page
+            const url = new URL(window.location);
+            url.searchParams.set("content", content);
+            window.history.pushState({}, "", url);
+
+            // Affichage immédiat
+            document.getElementById("display").innerHTML = content;
+        });
+    </script>
+</body>
+</html>

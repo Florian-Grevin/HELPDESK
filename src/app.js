@@ -12,11 +12,11 @@ const AuthRoutes = require('./routes/auth.routes')
 const logger = require('./middlewares/logger.middleware');
 const errorHandler = require('./errors/errorHandler');
 const passport = require('passport');
+const sanitizer = require('./middlewares/sanitizer');
 
 const app = express();
 
 app.use((req, res, next) => {
-  console.log("MIDDLEWARE TOUT EN HAUT");
   next();
 });
 
@@ -40,8 +40,10 @@ callback(new Error('Bloqué par CORS : Domaine non autorisé'));
 methods: ['GET', 'POST', 'PUT', 'DELETE'], // Verbes autorisés
 allowedHeaders: ['Content-Type', 'Authorization'] // Headers autorisés
 };
+
+
 // Application du middleware
-app.use(cors(corsOptions));
+app.use(cors(/*corsOptions*/));
 
 app.use(passport.initialize());
 require('./config/passport')(passport);
@@ -51,6 +53,19 @@ app.use(globalLimiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(sanitizer);
+
+// Stockage temporaire en mémoire (pour la démo)
+const messages = [];
+app.get('/messages', (req, res) => res.json(messages));
+app.post('/messages', (req, res) => {
+// Faille : On stocke directement ce qu'on reçoit sans nettoyer
+const { content } = req.body;
+messages.push({ content, date: new Date() });
+res.json({ status: 'success' });
+});
+
+
 
 // 3. Protection contre la pollution de paramètres (HPP)
 app.use(hpp()); //Incompatible avec express 5
